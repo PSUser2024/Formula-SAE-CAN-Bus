@@ -4,13 +4,13 @@ CAN_message_t msg;
 
 // CAN-Bus ID
 
-int temp;
+uint16_t ch1temp;
 uint8_t bytes[sizeof(float)];
 unsigned char data[4];
   
 void setup() {
   
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   can1.begin();
   
@@ -22,12 +22,14 @@ void setup() {
 
 void loop() {
   //canSniff(msg);
-  if (can1.read(msg) ) {
+  if (can1.read(msg)) {
+    if(msg.id == 0x4B4){
+
     
       Serial.print(msg.id);
       Serial.print("   ");
-      data[0] = msg.buf[0];
-      data[1] = msg.buf[1];
+      data[1] = msg.buf[0];
+      data[0] = msg.buf[1];
       data[2] = msg.buf[2];
       data[3] = msg.buf[3];
       data[4] = msg.buf[4];
@@ -36,15 +38,19 @@ void loop() {
       data[7] = msg.buf[7];
     //Serial.print(msg.id);
 
+      memcpy(&ch1temp, data, 2);
+Serial.println(ch1temp, HEX);
+Serial.println("Hi");
+   //ch1temp = data[0] << 8;
+   //ch1temp = ch1temp || data[1]; 
+   int temp = ((ch1temp / 10) - 100);
+   Serial.println("hello");
+   Serial.println(temp);
+   Serial.println("Hey");
+ 
     
-    /*int temp = data[4] << 8;
-    temp = temp || data[5];
-    temp = ((temp / 10) - 100);
-    Serial.println("Temperature: " + temp);
-    */
-    
-    memcpy(&temp, data, 8);
-    Serial.println(temp);
+    //memcpy(&temp, data, 8);
+    //Serial.println(temp);
     
   /*  Serial.print("  CAN1 Current Sensor Voltage: "); 
     Serial.print(voltage,2); 
@@ -57,7 +63,7 @@ void loop() {
     Serial.print("  TS: "); Serial.println(msg.timestamp);
     */
   }
-
+  }
 delay(50);
 }
 void canSniff (const CAN_message_t &msg){ // Global callback to catch any CAN frame coming in
